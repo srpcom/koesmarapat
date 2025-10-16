@@ -303,22 +303,12 @@
             el.classList.remove('hidden');
         }
         
-        /**
-         * Helper function to format a Date object into YYYY-MM-DDTHH:MM string
-         * required for datetime-local input.
-         * @param {Date} date The date to format.
-         * @returns {string} The formatted date string.
-         */
         function formatDateForInput(date) {
             const offset = date.getTimezoneOffset();
             const localDate = new Date(date.getTime() - (offset*60*1000));
             return localDate.toISOString().slice(0, 16);
         }
 
-        /**
-         * Sets the default values for the meeting time inputs.
-         * Start time is now, end time is 1 hour from now.
-         */
         function setDefaultMeetingTimes() {
             const now = new Date();
             const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
@@ -355,7 +345,6 @@
                         if (error) console.error(error);
                     });
                     createForm.reset();
-                    // After resetting, set the default times again for the next meeting
                     setDefaultMeetingTimes(); 
                     showAdminMessage('create', 'success', 'Rapat berhasil dibuat!');
                 } else {
@@ -372,7 +361,7 @@
         function copyUrl() {
             const urlInput = document.getElementById('meeting-url');
             urlInput.select();
-            urlInput.setSelectionRange(0, 99999); // For mobile devices
+            urlInput.setSelectionRange(0, 99999);
             navigator.clipboard.writeText(urlInput.value)
                 .then(() => alert('URL berhasil disalin!'));
         }
