@@ -10,7 +10,6 @@
     <style>
         body { font-family: 'Inter', sans-serif; }
         .tab-button.active { border-color: #3b82f6; color: #3b82f6; background-color: #eff6ff; }
-        /* Style untuk menyembunyikan elemen */
         .hidden { display: none; }
     </style>
 </head>
@@ -159,7 +158,6 @@
 
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbxUIP954NhYlN3OU9VY2bw-poWsHCGIm6VFGjljG5r4Nbedq8jVH7X__6y_3vScQei6LA/exec";
-        // URL halaman depan (absensi) dibuat dinamis
         const FRONTEND_URL = window.location.href.split('?')[0].split('#')[0];
 
         // --- ELEMEN DOM GLOBAL ---
@@ -293,6 +291,8 @@
             document.querySelector(`button[onclick="switchTab('${tabId}')"]`).classList.add('active');
             if (tabId === 'meetingsList') {
                 loadMeetings();
+            } else if (tabId === 'createMeeting') {
+                setDefaultMeetingTimes();
             }
         }
         
@@ -301,6 +301,35 @@
             el.textContent = text;
             el.className = `p-4 mb-4 text-sm rounded-lg ${type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
             el.classList.remove('hidden');
+        }
+        
+        /**
+         * Helper function to format a Date object into YYYY-MM-DDTHH:MM string
+         * required for datetime-local input.
+         * @param {Date} date The date to format.
+         * @returns {string} The formatted date string.
+         */
+        function formatDateForInput(date) {
+            const offset = date.getTimezoneOffset();
+            const localDate = new Date(date.getTime() - (offset*60*1000));
+            return localDate.toISOString().slice(0, 16);
+        }
+
+        /**
+         * Sets the default values for the meeting time inputs.
+         * Start time is now, end time is 1 hour from now.
+         */
+        function setDefaultMeetingTimes() {
+            const now = new Date();
+            const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
+
+            const nowString = formatDateForInput(now);
+            const oneHourLaterString = formatDateForInput(oneHourLater);
+
+            document.getElementById('startTime').value = nowString;
+            document.getElementById('openTime').value = nowString;
+            document.getElementById('endTime').value = oneHourLaterString;
+            document.getElementById('closeTime').value = oneHourLaterString;
         }
 
         createForm.addEventListener('submit', async (e) => {
@@ -326,6 +355,8 @@
                         if (error) console.error(error);
                     });
                     createForm.reset();
+                    // After resetting, set the default times again for the next meeting
+                    setDefaultMeetingTimes(); 
                     showAdminMessage('create', 'success', 'Rapat berhasil dibuat!');
                 } else {
                     throw new Error(result.message || 'Gagal membuat rapat.');
@@ -339,7 +370,10 @@
         });
 
         function copyUrl() {
-            navigator.clipboard.writeText(document.getElementById('meeting-url').value)
+            const urlInput = document.getElementById('meeting-url');
+            urlInput.select();
+            urlInput.setSelectionRange(0, 99999); // For mobile devices
+            navigator.clipboard.writeText(urlInput.value)
                 .then(() => alert('URL berhasil disalin!'));
         }
 
@@ -422,3 +456,4 @@
     </script>
 </body>
 </html>
+
