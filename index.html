@@ -136,7 +136,7 @@
                          <p class="text-green-700 mt-2">Bagikan URL atau QR Code di bawah ini kepada peserta rapat.</p>
                          <div class="mt-4 p-4 bg-white rounded-md flex items-center justify-between space-x-4">
                             <input id="meeting-url" type="text" class="w-full border-0 bg-transparent text-gray-700" readonly>
-                            <button onclick="copyToClipboard('meeting-url')" class="text-sm font-medium text-blue-600 hover:text-blue-800 flex-shrink-0">Salin URL</button>
+                            <button onclick="copyToClipboard(this, 'meeting-url')" class="text-sm font-medium text-blue-600 hover:text-blue-800 flex-shrink-0">Salin URL</button>
                          </div>
                          <div class="mt-4 text-center">
                              <canvas id="qrcode-canvas"></canvas>
@@ -356,13 +356,25 @@
             }
         });
 
-        function copyToClipboard(elementId) {
-            const inputElement = document.getElementById(elementId);
+        function copyToClipboard(buttonElement, inputId) {
+            const inputElement = document.getElementById(inputId);
+            const originalContent = buttonElement.innerHTML;
+
             inputElement.select();
-            inputElement.setSelectionRange(0, 99999); // For mobile devices
+            inputElement.setSelectionRange(0, 99999);
             try {
                 navigator.clipboard.writeText(inputElement.value);
-                alert('Link berhasil disalin!');
+                buttonElement.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                    <span>Tersalin!</span>`;
+                buttonElement.classList.add('text-green-600');
+                
+                setTimeout(() => {
+                    buttonElement.innerHTML = originalContent;
+                    buttonElement.classList.remove('text-green-600');
+                }, 2000);
             } catch (err) {
                 console.error('Gagal menyalin:', err);
                 alert('Gagal menyalin link. Mohon salin secara manual.');
@@ -390,11 +402,16 @@
                                 <p class="text-sm mt-2">Jadwal: ${new Date(meeting.start_time).toLocaleString('id-ID')} - ${new Date(meeting.end_time).toLocaleString('id-ID')}</p>
                                 
                                 <!-- Link Absensi untuk dibagikan -->
-                                <div class="mt-4">
-                                    <label class="block text-sm font-medium text-gray-600">Link Absensi Peserta:</label>
-                                    <div class="mt-1 flex rounded-md shadow-sm">
+                                <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                    <label class="block text-sm font-semibold text-blue-800">Bagikan Link Absensi Ini:</label>
+                                    <div class="mt-2 flex rounded-md shadow-sm">
                                         <input type="text" id="url-${meeting.meeting_id}" value="${meetingUrl}" readonly class="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-l-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm border-gray-300 bg-gray-50 text-gray-700">
-                                        <button onclick="copyToClipboard('url-${meeting.meeting_id}')" class="inline-flex items-center px-4 py-2 rounded-r-md border border-l-0 border-gray-300 bg-gray-100 text-gray-600 text-sm font-medium hover:bg-gray-200 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-blue-500">Salin</button>
+                                        <button onclick="copyToClipboard(this, 'url-${meeting.meeting_id}')" title="Salin Link" class="relative inline-flex items-center space-x-2 px-4 py-2 rounded-r-md border border-l-0 border-gray-300 bg-gray-100 text-gray-600 text-sm font-medium hover:bg-gray-200 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-blue-500 transition-colors duration-200">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                            </svg>
+                                            <span>Salin</span>
+                                        </button>
                                     </div>
                                 </div>
 
