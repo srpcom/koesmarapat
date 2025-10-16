@@ -15,41 +15,60 @@
 </head>
 <body class="bg-gray-100">
 
-    <!-- ===== HALAMAN UNTUK PESERTA RAPAT ===== -->
+    <!-- ===== HALAMAN UNTUK PESERTA RAPAT (DENGAN LOGO) ===== -->
     <div id="user-view" class="hidden">
-        <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="w-full max-w-lg bg-white rounded-xl shadow-lg p-8">
-                <div id="loading-spinner" class="text-center hidden mb-4">
-                    <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                    <p class="text-gray-600 mt-2">Memproses...</p>
+        <div class="flex items-center justify-center min-h-screen p-4 bg-[#F0F4F8]">
+            <div class="w-full max-w-4xl bg-white rounded-2xl shadow-lg flex flex-col md:flex-row overflow-hidden">
+                
+                <!-- Sisi Kiri: Informasi & Branding -->
+                <div class="w-full md:w-2/5 bg-blue-600 p-8 text-white flex flex-col justify-center items-center md:items-start text-center md:text-left">
+                    <img src="https://raw.githubusercontent.com/srpcom/koesmarapat/main/new%20logo%20rsud%202025%20kecil.png" alt="Logo RSUD" class="h-24 w-auto mb-6">
+                    <h2 class="text-3xl font-bold">Daftar Hadir Rapat</h2>
+                    <p class="mt-2 text-blue-200">RSUD dr. R. Koesma Tuban</p>
+                    <div class="w-16 h-1 bg-blue-400 mt-6 rounded-full"></div>
                 </div>
-                <div id="meeting-details" class="text-center mb-6">
-                    <h1 id="meeting-title" class="text-2xl font-bold text-gray-800">Memuat detail rapat...</h1>
-                    <p id="meeting-time" class="text-gray-500 mt-1"></p>
-                </div>
-                <div id="user-message-container" class="hidden p-4 mb-4 text-sm rounded-lg" role="alert"></div>
-                <form id="attendance-form" class="space-y-6">
-                    <input type="text" id="name" name="name" required placeholder="Nama Lengkap" class="block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                    <input type="text" id="nip" name="nip" required placeholder="NIP / NIK" class="block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                    <input type="tel" id="phone" name="phone" required placeholder="Nomor WhatsApp Aktif (Contoh: 0812...)" class="block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                    <select id="status" name="status" required class="block w-full pl-4 pr-10 py-3 text-base bg-gray-50 border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 rounded-lg"><option>Hadir</option><option>Terlambat</option></select>
-                    <button type="submit" id="submit-button" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400">Kirim Daftar Hadir</button>
-                </form>
-                 <div id="success-state" class="hidden text-center py-8">
-                    <svg class="mx-auto h-16 w-16 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    <h2 class="mt-4 text-2xl font-bold text-gray-800">Kehadiran Berhasil Dicatat!</h2>
-                    <p class="mt-2 text-gray-600">Terima kasih. Notifikasi konfirmasi akan dikirim ke WhatsApp Anda.</p>
+
+                <!-- Sisi Kanan: Judul Rapat & Formulir -->
+                <div class="w-full md:w-3/5 p-8 flex flex-col justify-center">
+                    <div id="meeting-details" class="mb-6">
+                        <p class="text-sm text-gray-500">Selamat datang di rapat:</p>
+                        <h1 id="meeting-title" class="text-3xl font-bold text-gray-800 break-words">Memuat detail rapat...</h1>
+                        <p id="meeting-time" class="text-gray-500 mt-2"></p>
+                    </div>
+
+                    <div id="loading-spinner" class="text-center hidden py-8">
+                        <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        <p class="text-gray-600 mt-2">Memvalidasi rapat...</p>
+                    </div>
+
+                    <div id="user-message-container" class="hidden p-4 mb-4 text-sm rounded-lg" role="alert"></div>
+
+                    <form id="attendance-form" class="space-y-5">
+                        <input type="text" id="name" name="name" required placeholder="Nama Lengkap" class="block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <input type="text" id="nip" name="nip" required placeholder="NIP / NIK" class="block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <input type="tel" id="phone" name="phone" required placeholder="Nomor WhatsApp Aktif (Contoh: 0812...)" class="block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <select id="status" name="status" required class="block w-full px-4 py-3 text-base bg-gray-50 border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-lg shadow-sm"><option>Hadir</option><option>Terlambat</option></select>
+                        <button type="submit" id="submit-button" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400">Kirim Daftar Hadir</button>
+                    </form>
+
+                    <div id="success-state" class="hidden text-center py-8">
+                        <svg class="mx-auto h-16 w-16 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        <h2 class="mt-4 text-2xl font-bold text-gray-800">Kehadiran Berhasil Dicatat!</h2>
+                        <p class="mt-2 text-gray-600">Terima kasih. Notifikasi konfirmasi akan dikirim ke WhatsApp Anda.</p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ===== HALAMAN LOGIN UNTUK HOST ===== -->
+
+    <!-- ===== HALAMAN LOGIN UNTUK HOST (DENGAN LOGO) ===== -->
     <div id="login-view" class="hidden">
         <div class="flex items-center justify-center min-h-screen bg-gray-50 px-4">
             <div class="w-full max-w-md">
-                <div>
-                    <h2 class="text-center text-3xl font-extrabold text-gray-900">Login Akun Host</h2>
+                <div class="text-center">
+                    <img src="https://raw.githubusercontent.com/srpcom/koesmarapat/main/new%20logo%20rsud%202025%20kecil.png" alt="Logo RSUD" class="mx-auto h-20 w-auto">
+                    <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Login Akun Host</h2>
                     <p class="mt-2 text-center text-sm text-gray-600">
                         Atau <a href="#register" class="font-medium text-blue-600 hover:text-blue-500">buat akun baru</a>
                     </p>
@@ -170,8 +189,7 @@
         }
 
         // --- FUNGSI API HELPER ---
-        async function apiCall(path, payload) {
-            const buttonId = `${path.split('/')[1]}-button`;
+        async function apiCall(path, payload, buttonId) {
             const button = document.getElementById(buttonId);
             if(button) button.disabled = true;
 
@@ -200,7 +218,7 @@
             e.preventDefault();
             const payload = Object.fromEntries(new FormData(e.target).entries());
             try {
-                const result = await apiCall('users/login', payload);
+                const result = await apiCall('users/login', payload, 'login-button');
                 sessionStorage.setItem('loggedInUser', JSON.stringify(result.user));
                 window.location.hash = '#dashboard';
                 handleRouteChange();
@@ -213,7 +231,7 @@
             e.preventDefault();
             const payload = Object.fromEntries(new FormData(e.target).entries());
             try {
-                const result = await apiCall('users/register', payload);
+                const result = await apiCall('users/register', payload, 'register-button');
                 showMessage('register', 'success', result.message);
                 setTimeout(() => window.location.hash = '#login', 2000);
             } catch (error) {
@@ -231,8 +249,12 @@
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
             document.getElementById(`${tabId}-tab`).classList.remove('hidden');
-            document.querySelectorAll('.tab-button').forEach(button => button.classList.remove('active'));
-            document.querySelector(`button[onclick="switchTab('${tabId}')"]`).classList.add('active');
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active','text-blue-600', 'border-blue-600', 'bg-blue-50');
+                button.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+            });
+            const activeTab = document.querySelector(`button[onclick="switchTab('${tabId}')"]`);
+            activeTab.classList.add('active','text-blue-600', 'border-blue-600', 'bg-blue-50');
             
             if (tabId === 'meetingsList') loadMeetings();
             else if (tabId === 'createMeeting') setDefaultMeetingTimes();
@@ -246,7 +268,7 @@
             payload.departmentId = user.departmentId;
 
             try {
-                const result = await apiCall('meetings/create', payload);
+                const result = await apiCall('meetings/create', payload, 'create-button');
                 const meetingUrl = `${FRONTEND_URL}?meetingId=${result.meetingId}`;
                 document.getElementById('meeting-url').value = meetingUrl;
                 document.getElementById('meeting-result').classList.remove('hidden');
@@ -346,35 +368,51 @@
         }
 
         async function fetchMeetingDetails(meetingId) {
+            document.getElementById('loading-spinner').classList.remove('hidden');
+            document.getElementById('attendance-form').classList.add('hidden');
+            const userMessageContainer = document.getElementById('user-message-container');
+            
             try {
-                const response = await fetch(`${API_URL}?path=meetings/list`); // Fetches all meetings
+                // This fetches all meetings to find the one with the matching ID.
+                // It's inefficient but required by the current backend design for user-side validation.
+                // A better approach would be a dedicated `GET /meetings/:id` endpoint.
+                const response = await fetch(`${API_URL}?path=meetings/list`); 
                 const result = await response.json();
                 if (!result.success) throw new Error(result.message);
+
                 const meeting = result.data.find(m => m.meeting_id === meetingId);
                 if (meeting) {
                     document.getElementById('meeting-title').textContent = meeting.meeting_title;
                     const open = new Date(meeting.attendance_open_time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
                     const close = new Date(meeting.attendance_close_time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
                     document.getElementById('meeting-time').textContent = `Absensi dibuka dari pukul ${open} hingga ${close}.`;
+                    document.getElementById('attendance-form').classList.remove('hidden');
                 } else {
                     throw new Error('Rapat tidak ditemukan atau ID tidak valid.');
                 }
             } catch (error) {
-                showMessage('user-message-container', 'error', error.message);
-                document.getElementById('attendance-form').classList.add('hidden');
+                 userMessageContainer.textContent = error.message;
+                 userMessageContainer.className = 'p-4 mb-4 text-sm rounded-lg bg-red-100 text-red-800';
+                 userMessageContainer.classList.remove('hidden');
+            } finally {
+                document.getElementById('loading-spinner').classList.add('hidden');
             }
         }
+
 
         document.getElementById('attendance-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const payload = Object.fromEntries(new FormData(e.target).entries());
             payload.meetingId = new URLSearchParams(window.location.search).get('meetingId');
             try {
-                const result = await apiCall('attendance/submit', payload);
+                const result = await apiCall('attendance/submit', payload, 'submit-button');
                 document.getElementById('attendance-form').classList.add('hidden');
                 document.getElementById('success-state').classList.remove('hidden');
             } catch (error) {
-                showMessage('user-message-container', 'error', error.message);
+                 const userMessageContainer = document.getElementById('user-message-container');
+                 userMessageContainer.textContent = error.message;
+                 userMessageContainer.className = 'p-4 mb-4 text-sm rounded-lg bg-red-100 text-red-800';
+                 userMessageContainer.classList.remove('hidden');
             }
         });
         
