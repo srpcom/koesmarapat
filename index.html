@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daftar Hadir Rapat Online</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1/build/qrcode.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1/build/qrcode.min.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; }
         .tab-button.active { border-color: #3b82f6; color: #3b82f6; background-color: #eff6ff; }
@@ -15,464 +15,390 @@
 </head>
 <body class="bg-gray-100">
 
-    <!-- Container untuk Halaman Absensi Pengguna -->
-    <div id="user-view">
+    <!-- ===== HALAMAN UNTUK PESERTA RAPAT ===== -->
+    <div id="user-view" class="hidden">
         <div class="flex items-center justify-center min-h-screen p-4">
             <div class="w-full max-w-lg bg-white rounded-xl shadow-lg p-8">
                 <div id="loading-spinner" class="text-center hidden mb-4">
-                    <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
+                    <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                     <p class="text-gray-600 mt-2">Memproses...</p>
                 </div>
-
                 <div id="meeting-details" class="text-center mb-6">
                     <h1 id="meeting-title" class="text-2xl font-bold text-gray-800">Memuat detail rapat...</h1>
                     <p id="meeting-time" class="text-gray-500 mt-1"></p>
                 </div>
-
                 <div id="user-message-container" class="hidden p-4 mb-4 text-sm rounded-lg" role="alert"></div>
-
                 <form id="attendance-form" class="space-y-6">
-                    <div>
-                        <label for="name" class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
-                        <input type="text" id="name" name="name" required class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                    </div>
-                    <div>
-                        <label for="nip" class="block text-sm font-medium text-gray-700">NIP / NIK</label>
-                        <input type="text" id="nip" name="nip" required class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                    </div>
-                    <div>
-                        <label for="phone" class="block text-sm font-medium text-gray-700">Nomor WhatsApp Aktif</label>
-                        <input type="tel" id="phone" name="phone" required placeholder="Contoh: 081234567890" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                    </div>
-                    <div>
-                        <label for="status" class="block text-sm font-medium text-gray-700">Status Kehadiran</label>
-                        <select id="status" name="status" required class="mt-1 block w-full pl-4 pr-10 py-3 text-base bg-gray-50 border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 rounded-lg">
-                            <option>Hadir</option>
-                            <option>Terlambat</option>
-                        </select>
-                    </div>
-                    <div>
-                        <button type="submit" id="submit-button" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400">
-                            Kirim Daftar Hadir
-                        </button>
-                    </div>
+                    <input type="text" id="name" name="name" required placeholder="Nama Lengkap" class="block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    <input type="text" id="nip" name="nip" required placeholder="NIP / NIK" class="block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    <input type="tel" id="phone" name="phone" required placeholder="Nomor WhatsApp Aktif (Contoh: 0812...)" class="block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    <select id="status" name="status" required class="block w-full pl-4 pr-10 py-3 text-base bg-gray-50 border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 rounded-lg"><option>Hadir</option><option>Terlambat</option></select>
+                    <button type="submit" id="submit-button" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400">Kirim Daftar Hadir</button>
                 </form>
                  <div id="success-state" class="hidden text-center py-8">
-                    <svg class="mx-auto h-16 w-16 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
+                    <svg class="mx-auto h-16 w-16 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     <h2 class="mt-4 text-2xl font-bold text-gray-800">Kehadiran Berhasil Dicatat!</h2>
-                    <p class="mt-2 text-gray-600">Terima kasih. Notifikasi konfirmasi telah dikirim ke nomor WhatsApp Anda.</p>
+                    <p class="mt-2 text-gray-600">Terima kasih. Notifikasi konfirmasi akan dikirim ke WhatsApp Anda.</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Container untuk Halaman Admin -->
-    <div id="admin-view" class="hidden">
-        <div class="container mx-auto p-4 md:p-8 max-w-7xl">
-            <header class="mb-8">
-                <h1 class="text-4xl font-bold text-gray-800">Dashboard Admin Rapat</h1>
-                <p class="text-gray-500 mt-1">Buat rapat baru, lihat daftar hadir, dan ekspor laporan.</p>
-            </header>
+    <!-- ===== HALAMAN LOGIN UNTUK HOST ===== -->
+    <div id="login-view" class="hidden">
+        <div class="flex items-center justify-center min-h-screen bg-gray-50 px-4">
+            <div class="w-full max-w-md">
+                <div>
+                    <h2 class="text-center text-3xl font-extrabold text-gray-900">Login Akun Host</h2>
+                    <p class="mt-2 text-center text-sm text-gray-600">
+                        Atau <a href="#register" class="font-medium text-blue-600 hover:text-blue-500">buat akun baru</a>
+                    </p>
+                </div>
+                <form id="login-form" class="mt-8 space-y-6 bg-white p-8 shadow-lg rounded-xl">
+                    <div id="login-message" class="hidden p-4 text-sm rounded-lg" role="alert"></div>
+                    <input type="email" name="email" required class="w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Alamat Email">
+                    <input type="password" name="password" required class="w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Password">
+                    <button type="submit" id="login-button" class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Login</button>
+                </form>
+            </div>
+        </div>
+    </div>
 
+    <!-- ===== HALAMAN REGISTRASI UNTUK HOST ===== -->
+    <div id="register-view" class="hidden">
+        <div class="flex items-center justify-center min-h-screen bg-gray-50 px-4">
+             <div class="w-full max-w-md">
+                <div>
+                    <h2 class="text-center text-3xl font-extrabold text-gray-900">Buat Akun Host Baru</h2>
+                    <p class="mt-2 text-center text-sm text-gray-600">
+                        Sudah punya akun? <a href="#login" class="font-medium text-blue-600 hover:text-blue-500">Login di sini</a>
+                    </p>
+                </div>
+                <form id="register-form" class="mt-8 space-y-6 bg-white p-8 shadow-lg rounded-xl">
+                    <div id="register-message" class="hidden p-4 text-sm rounded-lg" role="alert"></div>
+                    <input type="text" name="fullName" required class="w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Nama Lengkap">
+                    <input type="email" name="email" required class="w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Alamat Email">
+                    <input type="password" name="password" required class="w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Password">
+                    <input type="text" name="departmentId" required class="w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Nama Unit / Departemen">
+                    <button type="submit" id="register-button" class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Daftar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== HALAMAN DASHBOARD UNTUK HOST ===== -->
+    <div id="dashboard-view" class="hidden">
+        <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+            <header class="mb-8 flex justify-between items-center">
+                <div>
+                    <h1 class="text-4xl font-bold text-gray-800">Dashboard Rapat</h1>
+                    <p id="welcome-message" class="text-gray-500 mt-1"></p>
+                </div>
+                <button id="logout-button" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg">Logout</button>
+            </header>
             <div class="border-b border-gray-200 mb-6">
                 <nav class="-mb-px flex space-x-6" aria-label="Tabs">
-                    <button onclick="switchTab('createMeeting')" class="tab-button active whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">Buat Rapat Baru</button>
-                    <button onclick="switchTab('meetingsList')" class="tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Daftar Rapat</button>
+                    <button onclick="switchTab('createMeeting')" class="tab-button active">Buat Rapat Baru</button>
+                    <button onclick="switchTab('meetingsList')" class="tab-button">Daftar Rapat Saya</button>
                 </nav>
             </div>
-
             <main>
                 <div id="createMeeting-tab" class="tab-content">
                     <div class="bg-white p-8 rounded-xl shadow-md">
                         <h2 class="text-2xl font-semibold text-gray-800 mb-6">Formulir Rapat Baru</h2>
                         <div id="create-message" class="hidden p-4 mb-4 text-sm rounded-lg" role="alert"></div>
                         <form id="create-meeting-form" class="space-y-6">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label for="title" class="block text-sm font-medium text-gray-700">Judul Rapat</label>
-                                    <input type="text" id="title" name="title" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                </div>
-                                <div>
-                                    <label for="departmentId" class="block text-sm font-medium text-gray-700">ID Departemen Penyelenggara</label>
-                                    <input type="text" id="departmentId" name="departmentId" placeholder="Contoh: IT, HRD" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                </div>
+                            <input type="text" id="title" name="title" required placeholder="Judul Rapat" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <input type="datetime-local" id="startTime" name="startTime" required title="Waktu Mulai Rapat" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <input type="datetime-local" id="endTime" name="endTime" required title="Waktu Selesai Rapat" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <input type="datetime-local" id="openTime" name="openTime" required title="Absensi Dibuka" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <input type="datetime-local" id="closeTime" name="closeTime" required title="Absensi Ditutup" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                             </div>
-                            <div>
-                                <label for="userId" class="block text-sm font-medium text-gray-700">ID Pengguna (Host)</label>
-                                <input type="text" id="userId" name="userId" placeholder="NIP/Username host" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label for="startTime" class="block text-sm font-medium text-gray-700">Waktu Mulai Rapat</label>
-                                    <input type="datetime-local" id="startTime" name="startTime" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                </div>
-                                <div>
-                                    <label for="endTime" class="block text-sm font-medium text-gray-700">Waktu Selesai Rapat</label>
-                                    <input type="datetime-local" id="endTime" name="endTime" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                </div>
-                                <div>
-                                    <label for="openTime" class="block text-sm font-medium text-gray-700">Absensi Dibuka</label>
-                                    <input type="datetime-local" id="openTime" name="openTime" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                </div>
-                                <div>
-                                    <label for="closeTime" class="block text-sm font-medium text-gray-700">Absensi Ditutup</label>
-                                    <input type="datetime-local" id="closeTime" name="closeTime" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                </div>
-                            </div>
-                            <div class="pt-4">
-                                <button type="submit" id="create-button" class="w-full md:w-auto inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-3 px-6 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400">
-                                    Buat Rapat
-                                </button>
-                            </div>
+                            <button type="submit" id="create-button" class="w-full md:w-auto inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-3 px-6 text-base font-medium text-white shadow-sm hover:bg-blue-700">Buat Rapat</button>
                         </form>
                     </div>
                     <div id="meeting-result" class="hidden mt-8 bg-green-50 p-6 rounded-xl border border-green-200">
                          <h3 class="text-xl font-semibold text-green-800">Rapat Berhasil Dibuat!</h3>
-                         <p class="text-green-700 mt-2">Bagikan URL atau QR Code di bawah ini kepada peserta rapat.</p>
-                         <div class="mt-4 p-4 bg-white rounded-md flex items-center justify-between space-x-4">
-                            <input id="meeting-url" type="text" class="w-full border-0 bg-transparent text-gray-700" readonly>
-                            <button onclick="copyToClipboard(this, 'meeting-url')" class="text-sm font-medium text-blue-600 hover:text-blue-800 flex-shrink-0">Salin URL</button>
-                         </div>
-                         <div class="mt-4 text-center">
-                             <canvas id="qrcode-canvas"></canvas>
-                         </div>
+                         <p class="text-green-700 mt-2">Bagikan URL atau QR Code di bawah ini kepada peserta.</p>
+                         <div class="mt-4 p-4 bg-white rounded-md flex items-center"><input id="meeting-url" type="text" class="w-full border-0 bg-transparent text-gray-700" readonly><button onclick="copyToClipboard(this, 'meeting-url')" class="text-sm font-medium text-blue-600 hover:text-blue-800 flex-shrink-0">Salin URL</button></div>
+                         <div class="mt-4 text-center"><canvas id="qrcode-canvas"></canvas></div>
                     </div>
                 </div>
                 <div id="meetingsList-tab" class="tab-content hidden">
-                    <div class="flex justify-end mb-4">
-                         <button onclick="loadMeetings()" class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-300 rounded-lg shadow-sm">
-                            Refresh Data
-                        </button>
-                    </div>
+                    <div class="flex justify-end mb-4"><button onclick="loadMeetings()" class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-300 rounded-lg shadow-sm">Refresh Data</button></div>
                     <div id="meetings-container" class="space-y-4"></div>
                 </div>
             </main>
         </div>
     </div>
 
-
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbzml7jwOTHppZV-o5TYBqurSG_DM9jFF1zndz0uPz0n_enMjW_my7PwAH04VdZWNwv_/exec";
         const FRONTEND_URL = window.location.href.split('?')[0].split('#')[0];
+        const ALL_VIEWS = ['user-view', 'login-view', 'register-view', 'dashboard-view'];
 
-        // --- ELEMEN DOM GLOBAL ---
-        const userView = document.getElementById('user-view');
-        const adminView = document.getElementById('admin-view');
-
-        // --- ROUTER & LOGIKA UTAMA ---
+        // --- ROUTER & OTENTIKASI ---
         function handleRouteChange() {
-            if (window.location.hash === '#admin') {
-                showAdminView();
-            } else {
-                showUserView();
-            }
-        }
-        
-        function showUserView() {
-            adminView.classList.add('hidden');
-            userView.classList.remove('hidden');
-            document.body.classList.remove('bg-gray-50');
-            document.body.classList.add('bg-gray-100');
-            initializeUserView();
-        }
-
-        function showAdminView() {
-            userView.classList.add('hidden');
-            adminView.classList.remove('hidden');
-            document.body.classList.add('bg-gray-50');
-            document.body.classList.remove('bg-gray-100');
-            initializeAdminView();
-        }
-        
-        // --- LOGIKA UNTUK TAMPILAN PENGGUNA (ABSENSI) ---
-        const attendanceForm = document.getElementById('attendance-form');
-        const spinner = document.getElementById('loading-spinner');
-        const meetingTitleEl = document.getElementById('meeting-title');
-        const meetingTimeEl = document.getElementById('meeting-time');
-        const submitButton = document.getElementById('submit-button');
-        const userMessageContainer = document.getElementById('user-message-container');
-        const successState = document.getElementById('success-state');
-
-        function showUserMessage(type, text) {
-            userMessageContainer.textContent = text;
-            userMessageContainer.className = `p-4 mb-4 text-sm rounded-lg ${type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
-            userMessageContainer.classList.remove('hidden');
-        }
-
-        async function fetchMeetingDetails(meetingId) {
-            spinner.classList.remove('hidden');
-            try {
-                const response = await fetch(`${API_URL}?path=meetings/list`);
-                const result = await response.json();
-                if (result.success && result.data) {
-                    const meeting = result.data.find(m => m.meeting_id === meetingId);
-                    if (meeting) {
-                        meetingTitleEl.textContent = meeting.meeting_title;
-                        const openTime = new Date(meeting.attendance_open_time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-                        const closeTime = new Date(meeting.attendance_close_time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-                        meetingTimeEl.textContent = `Absensi dibuka dari pukul ${openTime} hingga ${closeTime}.`;
-                    } else {
-                        showUserMessage('error', 'Rapat tidak ditemukan atau ID tidak valid.');
-                        attendanceForm.classList.add('hidden');
-                    }
-                } else {
-                    throw new Error(result.message || 'Gagal mengambil data rapat.');
-                }
-            } catch (error) {
-                showUserMessage('error', `Error: ${error.message}`);
-                attendanceForm.classList.add('hidden');
-            } finally {
-                spinner.classList.add('hidden');
-            }
-        }
-        
-        attendanceForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            spinner.classList.remove('hidden');
-            submitButton.disabled = true;
-            userMessageContainer.classList.add('hidden');
-
-            const formData = new FormData(attendanceForm);
+            const hash = window.location.hash;
             const urlParams = new URLSearchParams(window.location.search);
-            const payload = {
-                meetingId: urlParams.get('meetingId'),
-                name: formData.get('name'), nip: formData.get('nip'),
-                phone: formData.get('phone'), status: formData.get('status')
-            };
+            const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
+
+            if (urlParams.has('meetingId')) {
+                showView('user-view');
+                initializeUserView(urlParams.get('meetingId'));
+            } else if (loggedInUser) {
+                if(hash === '#login' || hash === '#register') window.location.hash = '#dashboard';
+                else showView('dashboard-view');
+                initializeDashboardView(loggedInUser);
+            } else {
+                if (hash === '#register') showView('register-view');
+                else showView('login-view');
+            }
+        }
+
+        function showView(viewId) {
+            ALL_VIEWS.forEach(id => {
+                document.getElementById(id).classList.toggle('hidden', id !== viewId);
+            });
+        }
+        
+        function logout() {
+            sessionStorage.removeItem('loggedInUser');
+            window.location.hash = '#login';
+            handleRouteChange();
+        }
+
+        // --- FUNGSI API HELPER ---
+        async function apiCall(path, payload) {
+            const buttonId = `${path.split('/')[1]}-button`;
+            const button = document.getElementById(buttonId);
+            if(button) button.disabled = true;
 
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    body: JSON.stringify({ path: 'attendance/submit', payload: payload })
+                    body: JSON.stringify({ path, payload })
                 });
                 const result = await response.json();
-                if (result.success) {
-                    attendanceForm.classList.add('hidden');
-                    successState.classList.remove('hidden');
-                } else {
-                    throw new Error(result.message || 'Terjadi kesalahan.');
-                }
-            } catch (error) {
-                showUserMessage('error', `Gagal: ${error.message}`);
+                if (!result.success) throw new Error(result.message || 'Terjadi kesalahan.');
+                return result;
             } finally {
-                spinner.classList.add('hidden');
-                submitButton.disabled = false;
-            }
-        });
-        
-        function initializeUserView() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const meetingId = urlParams.get('meetingId');
-            if (!meetingId) {
-                meetingTitleEl.textContent = "Selamat Datang";
-                meetingTimeEl.textContent = "Silakan akses halaman ini melalui URL unik yang dibagikan oleh host rapat.";
-                attendanceForm.classList.add('hidden');
-            } else {
-                fetchMeetingDetails(meetingId);
+                if(button) button.disabled = false;
             }
         }
 
+        function showMessage(form, type, text) {
+            const el = document.getElementById(`${form}-message`);
+            el.textContent = text;
+            el.className = `p-4 mb-4 text-sm rounded-lg ${type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
+            el.classList.remove('hidden');
+        }
 
-        // --- LOGIKA UNTUK TAMPILAN ADMIN ---
-        const createForm = document.getElementById('create-meeting-form');
-        const createButton = document.getElementById('create-button');
-        const createMessageEl = document.getElementById('create-message');
+        // --- LOGIKA HALAMAN LOGIN & REGISTRASI ---
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = Object.fromEntries(new FormData(e.target).entries());
+            try {
+                const result = await apiCall('users/login', payload);
+                sessionStorage.setItem('loggedInUser', JSON.stringify(result.user));
+                window.location.hash = '#dashboard';
+                handleRouteChange();
+            } catch (error) {
+                showMessage('login', 'error', error.message);
+            }
+        });
+
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = Object.fromEntries(new FormData(e.target).entries());
+            try {
+                const result = await apiCall('users/register', payload);
+                showMessage('register', 'success', result.message);
+                setTimeout(() => window.location.hash = '#login', 2000);
+            } catch (error) {
+                showMessage('register', 'error', error.message);
+            }
+        });
+
+        // --- LOGIKA HALAMAN DASHBOARD HOST ---
+        function initializeDashboardView(user) {
+            document.getElementById('welcome-message').textContent = `Selamat datang kembali, ${user.fullName}!`;
+            document.getElementById('logout-button').onclick = logout;
+            switchTab('createMeeting');
+        }
 
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
             document.getElementById(`${tabId}-tab`).classList.remove('hidden');
             document.querySelectorAll('.tab-button').forEach(button => button.classList.remove('active'));
             document.querySelector(`button[onclick="switchTab('${tabId}')"]`).classList.add('active');
-            if (tabId === 'meetingsList') {
-                loadMeetings();
-            } else if (tabId === 'createMeeting') {
+            
+            if (tabId === 'meetingsList') loadMeetings();
+            else if (tabId === 'createMeeting') setDefaultMeetingTimes();
+        }
+
+        document.getElementById('create-meeting-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const user = JSON.parse(sessionStorage.getItem('loggedInUser'));
+            const payload = Object.fromEntries(new FormData(e.target).entries());
+            payload.userId = user.userId;
+            payload.departmentId = user.departmentId;
+
+            try {
+                const result = await apiCall('meetings/create', payload);
+                const meetingUrl = `${FRONTEND_URL}?meetingId=${result.meetingId}`;
+                document.getElementById('meeting-url').value = meetingUrl;
+                document.getElementById('meeting-result').classList.remove('hidden');
+                QRCode.toCanvas(document.getElementById('qrcode-canvas'), meetingUrl, { width: 220 });
+                e.target.reset();
                 setDefaultMeetingTimes();
+                showMessage('create', 'success', 'Rapat berhasil dibuat!');
+            } catch (error) {
+                showMessage('create', 'error', error.message);
+            }
+        });
+        
+        async function loadMeetings() {
+            const container = document.getElementById('meetings-container');
+            const user = JSON.parse(sessionStorage.getItem('loggedInUser'));
+            container.innerHTML = '<p>Memuat daftar rapat...</p>';
+            try {
+                const response = await fetch(`${API_URL}?path=meetings/list&host_user_id=${user.userId}`);
+                const result = await response.json();
+                if (!result.success) throw new Error(result.message);
+                
+                container.innerHTML = '';
+                if (result.data.length === 0) {
+                    container.innerHTML = '<p>Anda belum membuat rapat.</p>';
+                    return;
+                }
+                result.data.reverse().forEach(meeting => {
+                    const meetingUrl = `${FRONTEND_URL}?meetingId=${meeting.meeting_id}`;
+                    container.innerHTML += `<div class="bg-white p-6 rounded-lg shadow-sm border">
+                        <h3 class="font-bold text-xl">${meeting.meeting_title}</h3>
+                        <p class="text-sm text-gray-500">ID: ${meeting.meeting_id}</p>
+                        <p class="text-sm mt-2">Jadwal: ${new Date(meeting.start_time).toLocaleString('id-ID')} - ${new Date(meeting.end_time).toLocaleString('id-ID')}</p>
+                        <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                            <label class="block text-sm font-semibold text-blue-800">Bagikan Link Absensi Ini:</label>
+                            <div class="mt-2 flex rounded-md shadow-sm">
+                                <input type="text" id="url-${meeting.meeting_id}" value="${meetingUrl}" readonly class="flex-1 w-full px-3 py-2 rounded-l-md sm:text-sm border-gray-300 bg-gray-50">
+                                <button onclick="copyToClipboard(this, 'url-${meeting.meeting_id}')" class="relative inline-flex items-center space-x-2 px-4 py-2 rounded-r-md border border-l-0 border-gray-300 bg-gray-100 text-sm font-medium hover:bg-gray-200">
+                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg><span>Salin</span></button>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t"><button onclick="viewAttendance('${meeting.meeting_id}')" class="text-sm font-medium text-blue-600">Lihat Daftar Hadir</button></div>
+                        <div id="attendance-${meeting.meeting_id}" class="hidden mt-4"></div>
+                    </div>`;
+                });
+            } catch (error) {
+                 container.innerHTML = `<p class="text-red-500">Gagal memuat: ${error.message}</p>`;
             }
         }
-        
-        function showAdminMessage(form, type, text) {
-            const el = document.getElementById(`${form}-message`);
-            el.textContent = text;
-            el.className = `p-4 mb-4 text-sm rounded-lg ${type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
-            el.classList.remove('hidden');
-        }
-        
-        function formatDateForInput(date) {
-            const offset = date.getTimezoneOffset();
-            const localDate = new Date(date.getTime() - (offset*60*1000));
-            return localDate.toISOString().slice(0, 16);
+
+        async function viewAttendance(meetingId) {
+            const div = document.getElementById(`attendance-${meetingId}`);
+            if (!div.classList.contains('hidden')) { div.classList.add('hidden'); return; }
+            div.classList.remove('hidden');
+            div.innerHTML = '<p>Memuat...</p>';
+            try {
+                const response = await fetch(`${API_URL}?path=attendance/list&meetingId=${meetingId}`);
+                const result = await response.json();
+                if (!result.success) throw new Error(result.message);
+                if (result.data.length === 0) { div.innerHTML = '<p>Belum ada peserta.</p>'; return; }
+                let table = `<table class="min-w-full divide-y divide-gray-200 mt-2"><thead><tr>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Nama</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">NIP</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Status</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Waktu</th>
+                    </tr></thead><tbody>`;
+                result.data.forEach(att => {
+                    table += `<tr>
+                        <td class="px-4 py-2 text-sm">${att.participant_name}</td><td class="px-4 py-2 text-sm">${att.participant_nip}</td>
+                        <td class="px-4 py-2 text-sm">${att.attendance_status}</td><td class="px-4 py-2 text-sm">${new Date(att.check_in_time).toLocaleTimeString('id-ID')}</td>
+                    </tr>`;
+                });
+                div.innerHTML = table + `</tbody></table>`;
+            } catch(error) {
+                div.innerHTML = `<p class="text-red-500">${error.message}</p>`;
+            }
         }
 
         function setDefaultMeetingTimes() {
             const now = new Date();
             const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
-
-            const nowString = formatDateForInput(now);
-            const oneHourLaterString = formatDateForInput(oneHourLater);
-
-            document.getElementById('startTime').value = nowString;
-            document.getElementById('openTime').value = nowString;
-            document.getElementById('endTime').value = oneHourLaterString;
-            document.getElementById('closeTime').value = oneHourLaterString;
+            const formatDate = (date) => new Date(date.getTime() - (date.getTimezoneOffset()*60*1000)).toISOString().slice(0, 16);
+            document.getElementById('startTime').value = formatDate(now);
+            document.getElementById('openTime').value = formatDate(now);
+            document.getElementById('endTime').value = formatDate(oneHourLater);
+            document.getElementById('closeTime').value = formatDate(oneHourLater);
         }
 
-        createForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            createButton.disabled = true;
-            createButton.textContent = "Membuat...";
-            createMessageEl.classList.add('hidden');
+        // --- LOGIKA HALAMAN ABSENSI PESERTA ---
+        function initializeUserView(meetingId) {
+            if (!meetingId) {
+                document.getElementById('meeting-title').textContent = "Selamat Datang";
+                document.getElementById('meeting-time').textContent = "Akses halaman ini melalui URL unik yang dibagikan host.";
+                document.getElementById('attendance-form').classList.add('hidden');
+            } else {
+                fetchMeetingDetails(meetingId);
+            }
+        }
 
-            const payload = Object.fromEntries(new FormData(createForm).entries());
-
+        async function fetchMeetingDetails(meetingId) {
             try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ path: 'meetings/create', payload: payload })
-                });
+                const response = await fetch(`${API_URL}?path=meetings/list`); // Fetches all meetings
                 const result = await response.json();
-                if (result.success) {
-                    const meetingUrl = `${FRONTEND_URL}?meetingId=${result.meetingId}`;
-                    document.getElementById('meeting-url').value = meetingUrl;
-                    document.getElementById('meeting-result').classList.remove('hidden');
-                    QRCode.toCanvas(document.getElementById('qrcode-canvas'), meetingUrl, { width: 220 }, (error) => {
-                        if (error) console.error(error);
-                    });
-                    createForm.reset();
-                    setDefaultMeetingTimes(); 
-                    showAdminMessage('create', 'success', 'Rapat berhasil dibuat!');
+                if (!result.success) throw new Error(result.message);
+                const meeting = result.data.find(m => m.meeting_id === meetingId);
+                if (meeting) {
+                    document.getElementById('meeting-title').textContent = meeting.meeting_title;
+                    const open = new Date(meeting.attendance_open_time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                    const close = new Date(meeting.attendance_close_time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                    document.getElementById('meeting-time').textContent = `Absensi dibuka dari pukul ${open} hingga ${close}.`;
                 } else {
-                    throw new Error(result.message || 'Gagal membuat rapat.');
+                    throw new Error('Rapat tidak ditemukan atau ID tidak valid.');
                 }
             } catch (error) {
-                showAdminMessage('create', 'error', `Error: ${error.message}`);
-            } finally {
-                createButton.disabled = false;
-                createButton.textContent = "Buat Rapat";
+                showMessage('user-message-container', 'error', error.message);
+                document.getElementById('attendance-form').classList.add('hidden');
+            }
+        }
+
+        document.getElementById('attendance-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = Object.fromEntries(new FormData(e.target).entries());
+            payload.meetingId = new URLSearchParams(window.location.search).get('meetingId');
+            try {
+                const result = await apiCall('attendance/submit', payload);
+                document.getElementById('attendance-form').classList.add('hidden');
+                document.getElementById('success-state').classList.remove('hidden');
+            } catch (error) {
+                showMessage('user-message-container', 'error', error.message);
             }
         });
-
+        
         function copyToClipboard(buttonElement, inputId) {
             const inputElement = document.getElementById(inputId);
             const originalContent = buttonElement.innerHTML;
-
             inputElement.select();
             inputElement.setSelectionRange(0, 99999);
             try {
                 navigator.clipboard.writeText(inputElement.value);
-                buttonElement.innerHTML = `
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                    </svg>
-                    <span>Tersalin!</span>`;
+                buttonElement.innerHTML = `<svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" /></svg><span>Tersalin!</span>`;
                 buttonElement.classList.add('text-green-600');
-                
                 setTimeout(() => {
                     buttonElement.innerHTML = originalContent;
                     buttonElement.classList.remove('text-green-600');
                 }, 2000);
             } catch (err) {
-                console.error('Gagal menyalin:', err);
-                alert('Gagal menyalin link. Mohon salin secara manual.');
-            }
-        }
-
-        async function loadMeetings() {
-            const container = document.getElementById('meetings-container');
-            container.innerHTML = '<p class="text-center text-gray-500">Memuat daftar rapat...</p>';
-            try {
-                const response = await fetch(`${API_URL}?path=meetings/list`);
-                const result = await response.json();
-                if (result.success && result.data) {
-                    container.innerHTML = '';
-                    if (result.data.length === 0) {
-                        container.innerHTML = '<p class="text-center text-gray-500">Belum ada rapat.</p>';
-                        return;
-                    }
-                    result.data.reverse().forEach(meeting => {
-                        const meetingUrl = `${FRONTEND_URL}?meetingId=${meeting.meeting_id}`;
-                        container.innerHTML += `
-                            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                                <h3 class="font-bold text-xl text-gray-900">${meeting.meeting_title}</h3>
-                                <p class="text-sm text-gray-500">ID: ${meeting.meeting_id}</p>
-                                <p class="text-sm mt-2">Jadwal: ${new Date(meeting.start_time).toLocaleString('id-ID')} - ${new Date(meeting.end_time).toLocaleString('id-ID')}</p>
-                                
-                                <!-- Link Absensi untuk dibagikan -->
-                                <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                                    <label class="block text-sm font-semibold text-blue-800">Bagikan Link Absensi Ini:</label>
-                                    <div class="mt-2 flex rounded-md shadow-sm">
-                                        <input type="text" id="url-${meeting.meeting_id}" value="${meetingUrl}" readonly class="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-l-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm border-gray-300 bg-gray-50 text-gray-700">
-                                        <button onclick="copyToClipboard(this, 'url-${meeting.meeting_id}')" title="Salin Link" class="relative inline-flex items-center space-x-2 px-4 py-2 rounded-r-md border border-l-0 border-gray-300 bg-gray-100 text-gray-600 text-sm font-medium hover:bg-gray-200 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-blue-500 transition-colors duration-200">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                                            </svg>
-                                            <span>Salin</span>
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div class="mt-4 pt-4 border-t border-gray-200">
-                                    <button onclick="viewAttendance('${meeting.meeting_id}')" class="text-sm font-medium text-blue-600 hover:text-blue-800">Lihat Daftar Hadir</button>
-                                </div>
-                                <div id="attendance-${meeting.meeting_id}" class="hidden mt-4"></div>
-                            </div>`;
-                    });
-                } else { throw new Error(result.message || 'Gagal memuat data.'); }
-            } catch (error) {
-                 container.innerHTML = `<p class="text-center text-red-500">Gagal memuat: ${error.message}</p>`;
+                alert('Gagal menyalin link.');
             }
         }
         
-        async function viewAttendance(meetingId) {
-            const div = document.getElementById(`attendance-${meetingId}`);
-            if (!div.classList.contains('hidden')) {
-                div.classList.add('hidden');
-                return;
-            }
-            div.classList.remove('hidden');
-            div.innerHTML = '<p class="text-sm text-gray-500">Memuat...</p>';
-            
-            try {
-                const response = await fetch(`${API_URL}?path=attendance/list&meetingId=${meetingId}`);
-                const result = await response.json();
-                if (result.success && result.data) {
-                     if (result.data.length === 0) {
-                        div.innerHTML = '<p class="text-sm text-gray-500">Belum ada peserta.</p>';
-                        return;
-                    }
-                    let table = `<table class="min-w-full divide-y divide-gray-200 mt-2"><thead class="bg-gray-50"><tr>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">NIP</th>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Waktu</th>
-                        </tr></thead><tbody class="bg-white divide-y divide-gray-200">`;
-                    result.data.forEach(att => {
-                        table += `<tr>
-                            <td class="px-4 py-2 whitespace-nowrap text-sm">${att.participant_name}</td>
-                            <td class="px-4 py-2 whitespace-nowrap text-sm">${att.participant_nip}</td>
-                            <td class="px-4 py-2 whitespace-nowrap text-sm">${att.attendance_status}</td>
-                            <td class="px-4 py-2 whitespace-nowrap text-sm">${new Date(att.check_in_time).toLocaleTimeString('id-ID')}</td>
-                        </tr>`;
-                    });
-                    div.innerHTML = table + `</tbody></table>`;
-                } else { throw new Error(result.message || 'Gagal.'); }
-            } catch(error) {
-                div.innerHTML = `<p class="text-sm text-red-500">${error.message}</p>`;
-            }
-        }
-
-        function initializeAdminView() {
-            switchTab('createMeeting');
-        }
-
-        // --- INISIALISASI HALAMAN ---
+        // --- INISIALISASI APLIKASI ---
         window.addEventListener('hashchange', handleRouteChange);
         window.addEventListener('load', handleRouteChange);
-
     </script>
 </body>
 </html>
