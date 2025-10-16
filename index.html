@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Hadir Rapat Online</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-lg bg-white rounded-xl shadow-lg p-8">
+        <div id="loading-spinner" class="text-center hidden mb-4">
+            <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p class="text-gray-600 mt-2">Memproses...</p>
+        </div>
+
+        <div id="meeting-details" class="text-center mb-6">
+            <h1 id="meeting-title" class="text-2xl font-bold text-gray-800">Memuat detail rapat...</h1>
+            <p id="meeting-time" class="text-gray-500 mt-1"></p>
+        </div>
+
+        <div id="message-container" class="hidden p-4 mb-4 text-sm rounded-lg" role="alert"></div>
+
+        <form id="attendance-form" class="space-y-6">
+            <div>
+                <label for="name" class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
+                <input type="text" id="name" name="name" required class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+                <label for="nip" class="block text-sm font-medium text-gray-700">NIP / NIK</label>
+                <input type="text" id="nip" name="nip" required class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+                <label for="phone" class="block text-sm font-medium text-gray-700">Nomor WhatsApp Aktif</label>
+                <input type="tel" id="phone" name="phone" required placeholder="Contoh: 081234567890" class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+                <label for="status" class="block text-sm font-medium text-gray-700">Status Kehadiran</label>
+                <select id="status" name="status" required class="mt-1 block w-full pl-4 pr-10 py-3 text-base bg-gray-50 border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 rounded-lg">
+                    <option>Hadir</option>
+                    <option>Terlambat</option>
+                </select>
+            </div>
+            <div>
+                <button type="submit" id="submit-button" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400">
+                    Kirim Daftar Hadir
+                </button>
+            </div>
+        </form>
+         <div id="success-state" class="hidden text-center py-8">
+            <svg class="mx-auto h-16 w-16 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h2 class="mt-4 text-2xl font-bold text-gray-800">Kehadiran Berhasil Dicatat!</h2>
+            <p class="mt-2 text-gray-600">Terima kasih. Notifikasi konfirmasi telah dikirim ke nomor WhatsApp Anda.</p>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbxUIP954NhYlN3OU9VY2bw-poWsHCGIm6VFGjljG5r4Nbedq8jVH7X__6y_3vScQei6LA/exec";
+
+        // Elemen DOM
+        const form = document.getElementById('attendance-form');
+        const spinner = document.getElementById('loading-spinner');
+        const meetingTitleEl = document.getElementById('meeting-title');
+        const meetingTimeEl = document.getElementById('meeting-time');
+        const submitButton = document.getElementById('submit-button');
+        const messageContainer = document.getElementById('message-container');
+        const successState = document.getElementById('success-state');
+
+        // Fungsi untuk menampilkan pesan
+        function showMessage(type, text) {
+            messageContainer.textContent = text;
+            messageContainer.className = `p-4 mb-4 text-sm rounded-lg ${type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
+            messageContainer.classList.remove('hidden');
+        }
+
+        // Fungsi untuk mengambil detail rapat saat halaman dimuat
+        async function fetchMeetingDetails(meetingId) {
+            spinner.classList.remove('hidden');
+            try {
+                // Asumsi: endpoint meeting/list mengembalikan semua rapat
+                // Kita akan filter di sisi client untuk mendapatkan detail rapat spesifik
+                const response = await fetch(`${API_URL}?path=meetings/list`);
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    const meeting = result.data.find(m => m.meeting_id === meetingId);
+                    if (meeting) {
+                        meetingTitleEl.textContent = meeting.meeting_title;
+                        const openTime = new Date(meeting.attendance_open_time).toLocaleTimeString('id-ID', { hour: '2-digit', minute:'2-digit' });
+                        const closeTime = new Date(meeting.attendance_close_time).toLocaleTimeString('id-ID', { hour: '2-digit', minute:'2-digit' });
+                        meetingTimeEl.textContent = `Absensi dibuka dari pukul ${openTime} hingga ${closeTime}.`;
+                    } else {
+                        showMessage('error', 'Rapat tidak ditemukan atau ID tidak valid.');
+                        form.classList.add('hidden');
+                    }
+                } else {
+                    throw new Error(result.message || 'Gagal mengambil data rapat.');
+                }
+            } catch (error) {
+                showMessage('error', `Error: ${error.message}`);
+                form.classList.add('hidden');
+            } finally {
+                spinner.classList.add('hidden');
+            }
+        }
+        
+        // Event listener untuk form submission
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            spinner.classList.remove('hidden');
+            submitButton.disabled = true;
+            messageContainer.classList.add('hidden');
+
+            const formData = new FormData(form);
+            const urlParams = new URLSearchParams(window.location.search);
+            const meetingId = urlParams.get('meetingId');
+
+            const payload = {
+                meetingId: meetingId,
+                name: formData.get('name'),
+                nip: formData.get('nip'),
+                phone: formData.get('phone'),
+                status: formData.get('status')
+            };
+
+            try {
+                // Mengirim data ke backend Google Apps Script
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ path: 'attendance/submit', payload: payload })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    form.classList.add('hidden');
+                    successState.classList.remove('hidden');
+                } else {
+                    throw new Error(result.message || 'Terjadi kesalahan saat mengirim data.');
+                }
+            } catch (error) {
+                showMessage('error', `Gagal: ${error.message}`);
+            } finally {
+                spinner.classList.add('hidden');
+                submitButton.disabled = false;
+            }
+        });
+
+        // Inisialisasi saat halaman dimuat
+        window.addEventListener('load', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const meetingId = urlParams.get('meetingId');
+
+            if (!meetingId) {
+                meetingTitleEl.textContent = "Error: ID Rapat Tidak Ditemukan";
+                meetingTimeEl.textContent = "Pastikan URL yang Anda gunakan sudah benar.";
+                form.classList.add('hidden');
+            } else {
+                fetchMeetingDetails(meetingId);
+            }
+        });
+    </script>
+</body>
+</html>
+
