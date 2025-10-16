@@ -15,24 +15,20 @@
 </head>
 <body class="bg-gray-100">
 
-    <!-- ===== HALAMAN UNTUK PESERTA RAPAT (DENGAN LOGO) ===== -->
+    <!-- ===== HALAMAN UNTUK PESERTA RAPAT (LOGO DI ATAS) ===== -->
     <div id="user-view" class="hidden">
-        <div class="flex items-center justify-center min-h-screen p-4 bg-[#F0F4F8]">
-            <div class="w-full max-w-4xl bg-white rounded-2xl shadow-lg flex flex-col md:flex-row overflow-hidden">
-                
-                <!-- Sisi Kiri: Informasi & Branding -->
-                <div class="w-full md:w-2/5 bg-blue-600 p-8 text-white flex flex-col justify-center items-center md:items-start text-center md:text-left">
-                    <img src="https://raw.githubusercontent.com/srpcom/koesmarapat/main/new%20logo%20rsud%202025%20kecil.png" alt="Logo RSUD" class="h-24 w-auto mb-6">
-                    <h2 class="text-3xl font-bold">Daftar Hadir Rapat</h2>
-                    <p class="mt-2 text-blue-200">RSUD dr. R. Koesma Tuban</p>
-                    <div class="w-16 h-1 bg-blue-400 mt-6 rounded-full"></div>
-                </div>
+        <div class="flex flex-col items-center justify-center min-h-screen p-4 bg-[#F0F4F8]">
+            <div class="mb-6 text-center">
+                <img src="https://raw.githubusercontent.com/srpcom/koesmarapat/main/new%20logo%20rsud%202025%20kecil.png" alt="Logo RSUD" class="mx-auto h-24 w-auto">
+                <h1 class="text-3xl font-bold text-slate-800 mt-4">Daftar Hadir Rapat</h1>
+                <p class="text-slate-500">RSUD dr. R. Koesma Tuban</p>
+            </div>
 
-                <!-- Sisi Kanan: Judul Rapat & Formulir -->
-                <div class="w-full md:w-3/5 p-8 flex flex-col justify-center">
-                    <div id="meeting-details" class="mb-6">
+            <div class="w-full max-w-lg bg-white rounded-2xl shadow-xl overflow-hidden">
+                <div class="p-8">
+                    <div id="meeting-details" class="text-center mb-6">
                         <p class="text-sm text-gray-500">Selamat datang di rapat:</p>
-                        <h1 id="meeting-title" class="text-3xl font-bold text-gray-800 break-words">Memuat detail rapat...</h1>
+                        <h2 id="meeting-title" class="text-2xl md:text-3xl font-bold text-gray-800 mt-1">Memuat judul rapat...</h2>
                         <p id="meeting-time" class="text-gray-500 mt-2"></p>
                     </div>
 
@@ -62,7 +58,7 @@
     </div>
 
 
-    <!-- ===== HALAMAN LOGIN UNTUK HOST (DENGAN NOMOR HP) ===== -->
+    <!-- ===== HALAMAN LOGIN UNTUK HOST (DENGAN LOGO) ===== -->
     <div id="login-view" class="hidden">
         <div class="flex items-center justify-center min-h-screen bg-gray-50 px-4">
             <div class="w-full max-w-md">
@@ -374,8 +370,6 @@
             
             try {
                 // This fetches all meetings to find the one with the matching ID.
-                // It's inefficient but required by the current backend design for user-side validation.
-                // A better approach would be a dedicated `GET /meetings/:id` endpoint.
                 const response = await fetch(`${API_URL}?path=meetings/list`); 
                 const result = await response.json();
                 if (!result.success) throw new Error(result.message);
