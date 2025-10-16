@@ -248,7 +248,7 @@
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    // ## PERBAIKAN CORS: Header Content-Type dihapus ##
                     body: JSON.stringify({ path: 'attendance/submit', payload: payload })
                 });
                 const result = await response.json();
@@ -333,7 +333,7 @@
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    // ## PERBAIKAN CORS: Header Content-Type dihapus ##
                     body: JSON.stringify({ path: 'meetings/create', payload: payload })
                 });
                 const result = await response.json();
