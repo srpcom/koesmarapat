@@ -136,7 +136,7 @@
                          <p class="text-green-700 mt-2">Bagikan URL atau QR Code di bawah ini kepada peserta rapat.</p>
                          <div class="mt-4 p-4 bg-white rounded-md flex items-center justify-between space-x-4">
                             <input id="meeting-url" type="text" class="w-full border-0 bg-transparent text-gray-700" readonly>
-                            <button onclick="copyUrl()" class="text-sm font-medium text-blue-600 hover:text-blue-800 flex-shrink-0">Salin URL</button>
+                            <button onclick="copyToClipboard('meeting-url')" class="text-sm font-medium text-blue-600 hover:text-blue-800 flex-shrink-0">Salin URL</button>
                          </div>
                          <div class="mt-4 text-center">
                              <canvas id="qrcode-canvas"></canvas>
@@ -248,7 +248,6 @@
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    // ## PERBAIKAN CORS: Header Content-Type dihapus ##
                     body: JSON.stringify({ path: 'attendance/submit', payload: payload })
                 });
                 const result = await response.json();
@@ -333,7 +332,6 @@
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
-                    // ## PERBAIKAN CORS: Header Content-Type dihapus ##
                     body: JSON.stringify({ path: 'meetings/create', payload: payload })
                 });
                 const result = await response.json();
@@ -358,12 +356,17 @@
             }
         });
 
-        function copyUrl() {
-            const urlInput = document.getElementById('meeting-url');
-            urlInput.select();
-            urlInput.setSelectionRange(0, 99999);
-            navigator.clipboard.writeText(urlInput.value)
-                .then(() => alert('URL berhasil disalin!'));
+        function copyToClipboard(elementId) {
+            const inputElement = document.getElementById(elementId);
+            inputElement.select();
+            inputElement.setSelectionRange(0, 99999); // For mobile devices
+            try {
+                navigator.clipboard.writeText(inputElement.value);
+                alert('Link berhasil disalin!');
+            } catch (err) {
+                console.error('Gagal menyalin:', err);
+                alert('Gagal menyalin link. Mohon salin secara manual.');
+            }
         }
 
         async function loadMeetings() {
@@ -379,11 +382,22 @@
                         return;
                     }
                     result.data.reverse().forEach(meeting => {
+                        const meetingUrl = `${FRONTEND_URL}?meetingId=${meeting.meeting_id}`;
                         container.innerHTML += `
                             <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
                                 <h3 class="font-bold text-xl text-gray-900">${meeting.meeting_title}</h3>
                                 <p class="text-sm text-gray-500">ID: ${meeting.meeting_id}</p>
                                 <p class="text-sm mt-2">Jadwal: ${new Date(meeting.start_time).toLocaleString('id-ID')} - ${new Date(meeting.end_time).toLocaleString('id-ID')}</p>
+                                
+                                <!-- Link Absensi untuk dibagikan -->
+                                <div class="mt-4">
+                                    <label class="block text-sm font-medium text-gray-600">Link Absensi Peserta:</label>
+                                    <div class="mt-1 flex rounded-md shadow-sm">
+                                        <input type="text" id="url-${meeting.meeting_id}" value="${meetingUrl}" readonly class="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-l-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm border-gray-300 bg-gray-50 text-gray-700">
+                                        <button onclick="copyToClipboard('url-${meeting.meeting_id}')" class="inline-flex items-center px-4 py-2 rounded-r-md border border-l-0 border-gray-300 bg-gray-100 text-gray-600 text-sm font-medium hover:bg-gray-200 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-blue-500">Salin</button>
+                                    </div>
+                                </div>
+
                                 <div class="mt-4 pt-4 border-t border-gray-200">
                                     <button onclick="viewAttendance('${meeting.meeting_id}')" class="text-sm font-medium text-blue-600 hover:text-blue-800">Lihat Daftar Hadir</button>
                                 </div>
