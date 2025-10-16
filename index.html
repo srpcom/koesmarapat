@@ -1,443 +1,359 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daftar Hadir Rapat Online</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1/build/qrcode.min.js"></script>
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        .tab-button.active { border-color: #3b82f6; color: #3b82f6; background-color: #eff6ff; }
-        .hidden { display: none; }
-    </style>
-</head>
-<body class="bg-gray-100">
+/**
+ * =================================================================
+ * KONFIGURASI APLIKASI DAFTAR HADIR (v2.1 - Login via HP)
+ * =================================================================
+ * @version 2.1.0
+ * @description Backend for the Online Attendance Application with a host account system using phone numbers.
+ */
 
-    <!-- ===== HALAMAN UNTUK PESERTA RAPAT (DENGAN LOGO) ===== -->
-    <div id="user-view" class="hidden">
-        <div class="flex items-center justify-center min-h-screen p-4 bg-[#F0F4F8]">
-            <div class="w-full max-w-4xl bg-white rounded-2xl shadow-lg flex flex-col md:flex-row overflow-hidden">
-                
-                <!-- Sisi Kiri: Informasi & Branding -->
-                <div class="w-full md:w-2/5 bg-blue-600 p-8 text-white flex flex-col justify-center items-center md:items-start text-center md:text-left">
-                    <img src="https://raw.githubusercontent.com/srpcom/koesmarapat/main/new%20logo%20rsud%202025%20kecil.png" alt="Logo RSUD" class="h-24 w-auto mb-6">
-                    <h2 class="text-3xl font-bold">Daftar Hadir Rapat</h2>
-                    <p class="mt-2 text-blue-200">RSUD dr. R. Koesma Tuban</p>
-                    <div class="w-16 h-1 bg-blue-400 mt-6 rounded-full"></div>
-                </div>
+// --- GLOBAL SETTINGS ---
+const SPREADSHEET_ID = ""; // Optional: Fill with an existing GSheet ID, or leave empty to create automatically.
+const SPREADSHEET_NAME = 'Database Absensi Rapat RSUD (Multi-Host)';
+const GDRIVE_FOLDER_NAME = 'File Notulen & Rapat RSUD';
+const LOG_SHEET_NAME = 'LogAplikasi';
 
-                <!-- Sisi Kanan: Judul Rapat & Formulir -->
-                <div class="w-full md:w-3/5 p-8 flex flex-col justify-center">
-                    <div id="meeting-details" class="mb-6">
-                        <p class="text-sm text-gray-500">Selamat datang di rapat:</p>
-                        <h1 id="meeting-title" class="text-3xl font-bold text-gray-800 break-words">Memuat detail rapat...</h1>
-                        <p id="meeting-time" class="text-gray-500 mt-2"></p>
-                    </div>
+// --- STARSENDER API CREDENTIALS ---
+const STARSENDER_API_KEY = "65162ade-7692-4ac9-9d20-8ff2ec097a08";
 
-                    <div id="loading-spinner" class="text-center hidden py-8">
-                        <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                        <p class="text-gray-600 mt-2">Memvalidasi rapat...</p>
-                    </div>
+/**
+ * =================================================================
+ * MAIN FUNCTIONS (API ENTRY POINTS)
+ * =================================================================
+ */
 
-                    <div id="user-message-container" class="hidden p-4 mb-4 text-sm rounded-lg" role="alert"></div>
+function doGet(e) {
+  try {
+    const path = e.parameter.path;
+    if (!path) {
+      initialSetup();
+      return createJsonResponse({ success: true, message: 'Initial setup has been executed. The backend is ready.' });
+    }
 
-                    <form id="attendance-form" class="space-y-5">
-                        <input type="text" id="name" name="name" required placeholder="Nama Lengkap" class="block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <input type="text" id="nip" name="nip" required placeholder="NIP / NIK" class="block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <input type="tel" id="phone" name="phone" required placeholder="Nomor WhatsApp Aktif (Contoh: 0812...)" class="block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <select id="status" name="status" required class="block w-full px-4 py-3 text-base bg-gray-50 border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-lg shadow-sm"><option>Hadir</option><option>Terlambat</option></select>
-                        <button type="submit" id="submit-button" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400">Kirim Daftar Hadir</button>
-                    </form>
-
-                    <div id="success-state" class="hidden text-center py-8">
-                        <svg class="mx-auto h-16 w-16 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                        <h2 class="mt-4 text-2xl font-bold text-gray-800">Kehadiran Berhasil Dicatat!</h2>
-                        <p class="mt-2 text-gray-600">Terima kasih. Notifikasi konfirmasi akan dikirim ke WhatsApp Anda.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
-    <!-- ===== HALAMAN LOGIN UNTUK HOST (DENGAN LOGO) ===== -->
-    <div id="login-view" class="hidden">
-        <div class="flex items-center justify-center min-h-screen bg-gray-50 px-4">
-            <div class="w-full max-w-md">
-                <div class="text-center">
-                    <img src="https://raw.githubusercontent.com/srpcom/koesmarapat/main/new%20logo%20rsud%202025%20kecil.png" alt="Logo RSUD" class="mx-auto h-20 w-auto">
-                    <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Login Akun Host</h2>
-                    <p class="mt-2 text-center text-sm text-gray-600">
-                        Atau <a href="#register" class="font-medium text-blue-600 hover:text-blue-500">buat akun baru</a>
-                    </p>
-                </div>
-                <form id="login-form" class="mt-8 space-y-6 bg-white p-8 shadow-lg rounded-xl">
-                    <div id="login-message" class="hidden p-4 text-sm rounded-lg" role="alert"></div>
-                    <input type="email" name="email" required class="w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Alamat Email">
-                    <input type="password" name="password" required class="w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Password">
-                    <button type="submit" id="login-button" class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Login</button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- ===== HALAMAN REGISTRASI UNTUK HOST ===== -->
-    <div id="register-view" class="hidden">
-        <div class="flex items-center justify-center min-h-screen bg-gray-50 px-4">
-             <div class="w-full max-w-md">
-                <div>
-                    <h2 class="text-center text-3xl font-extrabold text-gray-900">Buat Akun Host Baru</h2>
-                    <p class="mt-2 text-center text-sm text-gray-600">
-                        Sudah punya akun? <a href="#login" class="font-medium text-blue-600 hover:text-blue-500">Login di sini</a>
-                    </p>
-                </div>
-                <form id="register-form" class="mt-8 space-y-6 bg-white p-8 shadow-lg rounded-xl">
-                    <div id="register-message" class="hidden p-4 text-sm rounded-lg" role="alert"></div>
-                    <input type="text" name="fullName" required class="w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Nama Lengkap">
-                    <input type="email" name="email" required class="w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Alamat Email">
-                    <input type="password" name="password" required class="w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Password">
-                    <input type="text" name="departmentId" required class="w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Nama Unit / Departemen">
-                    <button type="submit" id="register-button" class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Daftar</button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- ===== HALAMAN DASHBOARD UNTUK HOST ===== -->
-    <div id="dashboard-view" class="hidden">
-        <div class="container mx-auto p-4 md:p-8 max-w-7xl">
-            <header class="mb-8 flex justify-between items-center">
-                <div>
-                    <h1 class="text-4xl font-bold text-gray-800">Dashboard Rapat</h1>
-                    <p id="welcome-message" class="text-gray-500 mt-1"></p>
-                </div>
-                <button id="logout-button" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg">Logout</button>
-            </header>
-            <div class="border-b border-gray-200 mb-6">
-                <nav class="-mb-px flex space-x-6" aria-label="Tabs">
-                    <button onclick="switchTab('createMeeting')" class="tab-button active">Buat Rapat Baru</button>
-                    <button onclick="switchTab('meetingsList')" class="tab-button">Daftar Rapat Saya</button>
-                </nav>
-            </div>
-            <main>
-                <div id="createMeeting-tab" class="tab-content">
-                    <div class="bg-white p-8 rounded-xl shadow-md">
-                        <h2 class="text-2xl font-semibold text-gray-800 mb-6">Formulir Rapat Baru</h2>
-                        <div id="create-message" class="hidden p-4 mb-4 text-sm rounded-lg" role="alert"></div>
-                        <form id="create-meeting-form" class="space-y-6">
-                            <input type="text" id="title" name="title" required placeholder="Judul Rapat" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <input type="datetime-local" id="startTime" name="startTime" required title="Waktu Mulai Rapat" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                <input type="datetime-local" id="endTime" name="endTime" required title="Waktu Selesai Rapat" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                <input type="datetime-local" id="openTime" name="openTime" required title="Absensi Dibuka" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                <input type="datetime-local" id="closeTime" name="closeTime" required title="Absensi Ditutup" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                            </div>
-                            <button type="submit" id="create-button" class="w-full md:w-auto inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-3 px-6 text-base font-medium text-white shadow-sm hover:bg-blue-700">Buat Rapat</button>
-                        </form>
-                    </div>
-                    <div id="meeting-result" class="hidden mt-8 bg-green-50 p-6 rounded-xl border border-green-200">
-                         <h3 class="text-xl font-semibold text-green-800">Rapat Berhasil Dibuat!</h3>
-                         <p class="text-green-700 mt-2">Bagikan URL atau QR Code di bawah ini kepada peserta.</p>
-                         <div class="mt-4 p-4 bg-white rounded-md flex items-center"><input id="meeting-url" type="text" class="w-full border-0 bg-transparent text-gray-700" readonly><button onclick="copyToClipboard(this, 'meeting-url')" class="text-sm font-medium text-blue-600 hover:text-blue-800 flex-shrink-0">Salin URL</button></div>
-                         <div class="mt-4 text-center"><canvas id="qrcode-canvas"></canvas></div>
-                    </div>
-                </div>
-                <div id="meetingsList-tab" class="tab-content hidden">
-                    <div class="flex justify-end mb-4"><button onclick="loadMeetings()" class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-300 rounded-lg shadow-sm">Refresh Data</button></div>
-                    <div id="meetings-container" class="space-y-4"></div>
-                </div>
-            </main>
-        </div>
-    </div>
-
-    <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbzml7jwOTHppZV-o5TYBqurSG_DM9jFF1zndz0uPz0n_enMjW_my7PwAH04VdZWNwv_/exec";
-        const FRONTEND_URL = window.location.href.split('?')[0].split('#')[0];
-        const ALL_VIEWS = ['user-view', 'login-view', 'register-view', 'dashboard-view'];
-
-        // --- ROUTER & OTENTIKASI ---
-        function handleRouteChange() {
-            const hash = window.location.hash;
-            const urlParams = new URLSearchParams(window.location.search);
-            const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
-
-            if (urlParams.has('meetingId')) {
-                showView('user-view');
-                initializeUserView(urlParams.get('meetingId'));
-            } else if (loggedInUser) {
-                if(hash === '#login' || hash === '#register') window.location.hash = '#dashboard';
-                else showView('dashboard-view');
-                initializeDashboardView(loggedInUser);
-            } else {
-                if (hash === '#register') showView('register-view');
-                else showView('login-view');
-            }
+    let response;
+    switch (path) {
+      case 'meetings/list':
+        const requestParam = e.parameter.host_user_id || e.parameter.meetingId;
+        if(e.parameter.host_user_id) {
+            response = listMeetings(requestParam);
+        } else {
+            response = getAllMeetings();
         }
+        break;
+      case 'attendance/list':
+        const meetingId = e.parameter.meetingId;
+        if (!meetingId) throw new Error("Parameter 'meetingId' is required.");
+        response = listAttendance(meetingId);
+        break;
+      default:
+        throw new Error(`Invalid GET endpoint: ${path}`);
+    }
+    return createJsonResponse({ success: true, data: response });
+  } catch (error) {
+    log(`ERROR (doGet): ${error.message} | Stack: ${error.stack}`);
+    return createJsonResponse({ success: false, message: error.message }, 500);
+  }
+}
 
-        function showView(viewId) {
-            ALL_VIEWS.forEach(id => {
-                document.getElementById(id).classList.toggle('hidden', id !== viewId);
-            });
-        }
-        
-        function logout() {
-            sessionStorage.removeItem('loggedInUser');
-            window.location.hash = '#login';
-            handleRouteChange();
-        }
+function doPost(e) {
+  try {
+    const requestData = JSON.parse(e.postData.contents);
+    const path = requestData.path;
+    const payload = requestData.payload;
 
-        // --- FUNGSI API HELPER ---
-        async function apiCall(path, payload, buttonId) {
-            const button = document.getElementById(buttonId);
-            if(button) button.disabled = true;
+    if (!path || !payload) {
+      throw new Error("Invalid request structure. 'path' and 'payload' are required.");
+    }
 
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ path, payload })
-                });
-                const result = await response.json();
-                if (!result.success) throw new Error(result.message || 'Terjadi kesalahan.');
-                return result;
-            } finally {
-                if(button) button.disabled = false;
-            }
-        }
+    let response;
+    switch (path) {
+      case 'users/register':
+        response = registerUser(payload);
+        break;
+      case 'users/login':
+        response = loginUser(payload);
+        break;
+      case 'meetings/create':
+        response = createMeeting(payload);
+        break;
+      case 'attendance/submit':
+        response = submitAttendance(payload);
+        break;
+      default:
+        throw new Error(`Invalid POST endpoint: ${path}`);
+    }
+    return createJsonResponse({ success: true, ...response });
+  } catch (error) {
+    log(`ERROR (doPost): ${error.message} | Payload: ${e.postData.contents}`);
+    return createJsonResponse({ success: false, message: error.message }, 500);
+  }
+}
 
-        function showMessage(form, type, text) {
-            const el = document.getElementById(`${form}-message`);
-            el.textContent = text;
-            el.className = `p-4 mb-4 text-sm rounded-lg ${type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
-            el.classList.remove('hidden');
-        }
+/**
+ * =================================================================
+ * USER (HOST) MANAGEMENT FUNCTIONS
+ * =================================================================
+ */
 
-        // --- LOGIKA HALAMAN LOGIN & REGISTRASI ---
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const payload = Object.fromEntries(new FormData(e.target).entries());
-            try {
-                const result = await apiCall('users/login', payload, 'login-button');
-                sessionStorage.setItem('loggedInUser', JSON.stringify(result.user));
-                window.location.hash = '#dashboard';
-                handleRouteChange();
-            } catch (error) {
-                showMessage('login', 'error', error.message);
-            }
-        });
+function registerUser(payload) {
+  const { fullName, phone, password, departmentId } = payload;
+  if (!fullName || !phone || !password || !departmentId) {
+    throw new Error('Semua kolom pendaftaran wajib diisi.');
+  }
 
-        document.getElementById('register-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const payload = Object.fromEntries(new FormData(e.target).entries());
-            try {
-                const result = await apiCall('users/register', payload, 'register-button');
-                showMessage('register', 'success', result.message);
-                setTimeout(() => window.location.hash = '#login', 2000);
-            } catch (error) {
-                showMessage('register', 'error', error.message);
-            }
-        });
+  const formattedPhone = formatAndValidateWaNumber(phone);
+  if (!formattedPhone) {
+      throw new Error('Nomor HP tidak valid. Gunakan format yang benar (contoh: 0812...).');
+  }
 
-        // --- LOGIKA HALAMAN DASHBOARD HOST ---
-        function initializeDashboardView(user) {
-            document.getElementById('welcome-message').textContent = `Selamat datang kembali, ${user.fullName}!`;
-            document.getElementById('logout-button').onclick = logout;
-            switchTab('createMeeting');
-        }
+  const usersSheet = getOrCreateSheet('Users');
+  const usersData = getSheetData(usersSheet);
 
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
-            document.getElementById(`${tabId}-tab`).classList.remove('hidden');
-            document.querySelectorAll('.tab-button').forEach(button => {
-                button.classList.remove('active','text-blue-600', 'border-blue-600', 'bg-blue-50');
-                button.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
-            });
-            const activeTab = document.querySelector(`button[onclick="switchTab('${tabId}')"]`);
-            activeTab.classList.add('active','text-blue-600', 'border-blue-600', 'bg-blue-50');
-            
-            if (tabId === 'meetingsList') loadMeetings();
-            else if (tabId === 'createMeeting') setDefaultMeetingTimes();
-        }
+  const existingUser = usersData.find(u => u.phone === formattedPhone);
+  if (existingUser) {
+    throw new Error('Nomor HP ini sudah terdaftar. Silakan gunakan nomor lain atau login.');
+  }
 
-        document.getElementById('create-meeting-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const user = JSON.parse(sessionStorage.getItem('loggedInUser'));
-            const payload = Object.fromEntries(new FormData(e.target).entries());
-            payload.userId = user.userId;
-            payload.departmentId = user.departmentId;
+  const userId = `HOST-${Utilities.getUuid().substring(0, 8).toUpperCase()}`;
+  const newRow = [userId, fullName, formattedPhone, password, departmentId, new Date()];
+  usersSheet.appendRow(newRow);
 
-            try {
-                const result = await apiCall('meetings/create', payload, 'create-button');
-                const meetingUrl = `${FRONTEND_URL}?meetingId=${result.meetingId}`;
-                document.getElementById('meeting-url').value = meetingUrl;
-                document.getElementById('meeting-result').classList.remove('hidden');
-                QRCode.toCanvas(document.getElementById('qrcode-canvas'), meetingUrl, { width: 220 });
-                e.target.reset();
-                setDefaultMeetingTimes();
-                showMessage('create', 'success', 'Rapat berhasil dibuat!');
-            } catch (error) {
-                showMessage('create', 'error', error.message);
-            }
-        });
-        
-        async function loadMeetings() {
-            const container = document.getElementById('meetings-container');
-            const user = JSON.parse(sessionStorage.getItem('loggedInUser'));
-            container.innerHTML = '<p>Memuat daftar rapat...</p>';
-            try {
-                const response = await fetch(`${API_URL}?path=meetings/list&host_user_id=${user.userId}`);
-                const result = await response.json();
-                if (!result.success) throw new Error(result.message);
-                
-                container.innerHTML = '';
-                if (result.data.length === 0) {
-                    container.innerHTML = '<p>Anda belum membuat rapat.</p>';
-                    return;
-                }
-                result.data.reverse().forEach(meeting => {
-                    const meetingUrl = `${FRONTEND_URL}?meetingId=${meeting.meeting_id}`;
-                    container.innerHTML += `<div class="bg-white p-6 rounded-lg shadow-sm border">
-                        <h3 class="font-bold text-xl">${meeting.meeting_title}</h3>
-                        <p class="text-sm text-gray-500">ID: ${meeting.meeting_id}</p>
-                        <p class="text-sm mt-2">Jadwal: ${new Date(meeting.start_time).toLocaleString('id-ID')} - ${new Date(meeting.end_time).toLocaleString('id-ID')}</p>
-                        <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                            <label class="block text-sm font-semibold text-blue-800">Bagikan Link Absensi Ini:</label>
-                            <div class="mt-2 flex rounded-md shadow-sm">
-                                <input type="text" id="url-${meeting.meeting_id}" value="${meetingUrl}" readonly class="flex-1 w-full px-3 py-2 rounded-l-md sm:text-sm border-gray-300 bg-gray-50">
-                                <button onclick="copyToClipboard(this, 'url-${meeting.meeting_id}')" class="relative inline-flex items-center space-x-2 px-4 py-2 rounded-r-md border border-l-0 border-gray-300 bg-gray-100 text-sm font-medium hover:bg-gray-200">
-                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg><span>Salin</span></button>
-                            </div>
-                        </div>
-                        <div class="mt-4 pt-4 border-t"><button onclick="viewAttendance('${meeting.meeting_id}')" class="text-sm font-medium text-blue-600">Lihat Daftar Hadir</button></div>
-                        <div id="attendance-${meeting.meeting_id}" class="hidden mt-4"></div>
-                    </div>`;
-                });
-            } catch (error) {
-                 container.innerHTML = `<p class="text-red-500">Gagal memuat: ${error.message}</p>`;
-            }
-        }
+  log(`Host baru terdaftar: ${fullName} (${formattedPhone})`);
+  return { message: 'Pendaftaran berhasil! Silakan login.' };
+}
 
-        async function viewAttendance(meetingId) {
-            const div = document.getElementById(`attendance-${meetingId}`);
-            if (!div.classList.contains('hidden')) { div.classList.add('hidden'); return; }
-            div.classList.remove('hidden');
-            div.innerHTML = '<p>Memuat...</p>';
-            try {
-                const response = await fetch(`${API_URL}?path=attendance/list&meetingId=${meetingId}`);
-                const result = await response.json();
-                if (!result.success) throw new Error(result.message);
-                if (result.data.length === 0) { div.innerHTML = '<p>Belum ada peserta.</p>'; return; }
-                let table = `<table class="min-w-full divide-y divide-gray-200 mt-2"><thead><tr>
-                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Nama</th>
-                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">NIP</th>
-                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Status</th>
-                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Waktu</th>
-                    </tr></thead><tbody>`;
-                result.data.forEach(att => {
-                    table += `<tr>
-                        <td class="px-4 py-2 text-sm">${att.participant_name}</td><td class="px-4 py-2 text-sm">${att.participant_nip}</td>
-                        <td class="px-4 py-2 text-sm">${att.attendance_status}</td><td class="px-4 py-2 text-sm">${new Date(att.check_in_time).toLocaleTimeString('id-ID')}</td>
-                    </tr>`;
-                });
-                div.innerHTML = table + `</tbody></table>`;
-            } catch(error) {
-                div.innerHTML = `<p class="text-red-500">${error.message}</p>`;
-            }
-        }
+function loginUser(payload) {
+  const { phone, password } = payload;
+  if (!phone || !password) {
+    throw new Error('Nomor HP dan password wajib diisi.');
+  }
 
-        function setDefaultMeetingTimes() {
-            const now = new Date();
-            const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
-            const formatDate = (date) => new Date(date.getTime() - (date.getTimezoneOffset()*60*1000)).toISOString().slice(0, 16);
-            document.getElementById('startTime').value = formatDate(now);
-            document.getElementById('openTime').value = formatDate(now);
-            document.getElementById('endTime').value = formatDate(oneHourLater);
-            document.getElementById('closeTime').value = formatDate(oneHourLater);
-        }
+  const formattedPhone = formatAndValidateWaNumber(phone);
+   if (!formattedPhone) {
+      throw new Error('Nomor HP tidak valid.');
+  }
 
-        // --- LOGIKA HALAMAN ABSENSI PESERTA ---
-        function initializeUserView(meetingId) {
-            if (!meetingId) {
-                document.getElementById('meeting-title').textContent = "Selamat Datang";
-                document.getElementById('meeting-time').textContent = "Akses halaman ini melalui URL unik yang dibagikan host.";
-                document.getElementById('attendance-form').classList.add('hidden');
-            } else {
-                fetchMeetingDetails(meetingId);
-            }
-        }
+  const usersSheet = getOrCreateSheet('Users');
+  const usersData = getSheetData(usersSheet);
+  
+  const user = usersData.find(u => u.phone === formattedPhone);
+  if (!user) {
+    throw new Error('Nomor HP tidak ditemukan.');
+  }
 
-        async function fetchMeetingDetails(meetingId) {
-            document.getElementById('loading-spinner').classList.remove('hidden');
-            document.getElementById('attendance-form').classList.add('hidden');
-            const userMessageContainer = document.getElementById('user-message-container');
-            
-            try {
-                // This fetches all meetings to find the one with the matching ID.
-                // It's inefficient but required by the current backend design for user-side validation.
-                // A better approach would be a dedicated `GET /meetings/:id` endpoint.
-                const response = await fetch(`${API_URL}?path=meetings/list`); 
-                const result = await response.json();
-                if (!result.success) throw new Error(result.message);
+  if (user.password !== password) {
+    throw new Error('Password salah.');
+  }
 
-                const meeting = result.data.find(m => m.meeting_id === meetingId);
-                if (meeting) {
-                    document.getElementById('meeting-title').textContent = meeting.meeting_title;
-                    const open = new Date(meeting.attendance_open_time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-                    const close = new Date(meeting.attendance_close_time).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-                    document.getElementById('meeting-time').textContent = `Absensi dibuka dari pukul ${open} hingga ${close}.`;
-                    document.getElementById('attendance-form').classList.remove('hidden');
-                } else {
-                    throw new Error('Rapat tidak ditemukan atau ID tidak valid.');
-                }
-            } catch (error) {
-                 userMessageContainer.textContent = error.message;
-                 userMessageContainer.className = 'p-4 mb-4 text-sm rounded-lg bg-red-100 text-red-800';
-                 userMessageContainer.classList.remove('hidden');
-            } finally {
-                document.getElementById('loading-spinner').classList.add('hidden');
-            }
-        }
+  log(`Host login berhasil: ${user.full_name} (${user.phone})`);
+  return {
+    message: 'Login berhasil!',
+    user: {
+      userId: user.user_id,
+      fullName: user.full_name,
+      departmentId: user.department_id
+    }
+  };
+}
 
 
-        document.getElementById('attendance-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const payload = Object.fromEntries(new FormData(e.target).entries());
-            payload.meetingId = new URLSearchParams(window.location.search).get('meetingId');
-            try {
-                const result = await apiCall('attendance/submit', payload, 'submit-button');
-                document.getElementById('attendance-form').classList.add('hidden');
-                document.getElementById('success-state').classList.remove('hidden');
-            } catch (error) {
-                 const userMessageContainer = document.getElementById('user-message-container');
-                 userMessageContainer.textContent = error.message;
-                 userMessageContainer.className = 'p-4 mb-4 text-sm rounded-lg bg-red-100 text-red-800';
-                 userMessageContainer.classList.remove('hidden');
-            }
-        });
-        
-        function copyToClipboard(buttonElement, inputId) {
-            const inputElement = document.getElementById(inputId);
-            const originalContent = buttonElement.innerHTML;
-            inputElement.select();
-            inputElement.setSelectionRange(0, 99999);
-            try {
-                navigator.clipboard.writeText(inputElement.value);
-                buttonElement.innerHTML = `<svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" /></svg><span>Tersalin!</span>`;
-                buttonElement.classList.add('text-green-600');
-                setTimeout(() => {
-                    buttonElement.innerHTML = originalContent;
-                    buttonElement.classList.remove('text-green-600');
-                }, 2000);
-            } catch (err) {
-                alert('Gagal menyalin link.');
-            }
-        }
-        
-        // --- INISIALISASI APLIKASI ---
-        window.addEventListener('hashchange', handleRouteChange);
-        window.addEventListener('load', handleRouteChange);
-    </script>
-</body>
-</html>
+/**
+ * =================================================================
+ * CORE APPLICATION FUNCTIONS
+ * =================================================================
+ */
+
+function createMeeting(payload) {
+  const { title, departmentId, userId, startTime, endTime, openTime, closeTime } = payload;
+  if (!title || !userId || !startTime || !endTime || !openTime || !closeTime) {
+    throw new Error('Semua kolom formulir rapat wajib diisi.');
+  }
+
+  const meetingsSheet = getOrCreateSheet('Meetings');
+  const meetingId = `RAPAT-${Utilities.getUuid().substring(0, 8).toUpperCase()}`;
+  
+  const newRow = [
+    meetingId, title, departmentId, userId,
+    new Date(startTime), new Date(endTime),
+    new Date(openTime), new Date(closeTime),
+    '', new Date()
+  ];
+  
+  meetingsSheet.appendRow(newRow);
+  log(`Rapat baru dibuat oleh ${userId}: ${meetingId} - ${title}`);
+  return { meetingId: meetingId };
+}
+
+function submitAttendance(payload) {
+  const { meetingId, name, nip, phone, status } = payload;
+  if (!meetingId || !name || !nip || !phone || !status) {
+    throw new Error('Data absensi tidak lengkap.');
+  }
+
+  const meetingsSheet = getOrCreateSheet('Meetings');
+  const meetingsData = getSheetData(meetingsSheet);
+  const meeting = meetingsData.find(m => m.meeting_id === meetingId);
+  if (!meeting) throw new Error('Rapat dengan ID tersebut tidak ditemukan.');
+
+  const now = new Date();
+  if (now < new Date(meeting.attendance_open_time) || now > new Date(meeting.attendance_close_time)) {
+    throw new Error('Maaf, sesi absensi untuk rapat ini sudah ditutup atau belum dibuka.');
+  }
+  
+  const attendanceSheet = getOrCreateSheet('Attendances');
+  const attendanceId = `ABS-${Utilities.getUuid().substring(0, 12).toUpperCase()}`;
+  const checkInTime = new Date();
+
+  attendanceSheet.appendRow([attendanceId, meetingId, name, nip, phone, status, checkInTime]);
+  log(`Absensi diterima: ${name} (NIP: ${nip}) untuk rapat ${meetingId}`);
+
+  const waMessage = `*Absensi Terkonfirmasi* ✅\n\nTerima kasih *_${name}_*,\nKehadiran Anda untuk rapat *"${meeting.meeting_title}"* telah berhasil kami catat.\n\n*Detail Anda:*\n` +
+                    "```" +
+                    `Nama: ${name}\nNIP: ${nip}\nStatus: ${status}\nWaktu: ${checkInTime.toLocaleString('id-ID')}` +
+                    "```" +
+                    `\n\nTerima kasih atas partisipasi Anda.`;
+  sendWhatsAppMessage(phone, waMessage);
+  
+  return { message: 'Kehadiran berhasil dicatat.' };
+}
+
+function listMeetings(hostId) {
+  const sheet = getOrCreateSheet('Meetings');
+  const allMeetings = getSheetData(sheet);
+  return allMeetings.filter(row => row.host_user_id === hostId);
+}
+
+function getAllMeetings() {
+  const sheet = getOrCreateSheet('Meetings');
+  return getSheetData(sheet);
+}
+
+
+function listAttendance(meetingId) {
+  const sheet = getOrCreateSheet('Attendances');
+  const allAttendance = getSheetData(sheet);
+  return allAttendance.filter(row => row.meeting_id === meetingId);
+}
+
+
+/**
+ * =================================================================
+ * UTILITY & HELPER FUNCTIONS
+ * =================================================================
+ */
+
+function sendWhatsAppMessage(phone, message) {
+  const formattedNumber = formatAndValidateWaNumber(phone);
+  if (!formattedNumber) {
+    log(`WhatsApp GAGAL: Nomor tidak valid: ${phone}`);
+    return;
+  }
+  const payload = { "messageType": "text", "to": formattedNumber, "body": message.replace(/<b>/g, '*').replace(/<\/b>/g, '*').replace(/<i>/g, '_').replace(/<\/i>/g, '_').replace(/<br>/g, '\n') };
+  const options = { 'method': 'post', 'contentType': 'application/json', 'headers': { 'Authorization': STARSENDER_API_KEY }, 'payload': JSON.stringify(payload), 'muteHttpExceptions': true };
+  try {
+    const response = UrlFetchApp.fetch('https://api.starsender.online/api/send', options);
+    log(`Notifikasi WA ke ${formattedNumber}. Status: ${response.getResponseCode()}`);
+  } catch (error) {
+    log(`CRITICAL ERROR saat kirim WA: ${error.toString()}`);
+  }
+}
+
+function formatAndValidateWaNumber(number) {
+    if (!number) return null;
+    let cleaned = String(number).replace(/[^\d]/g, '');
+    if (cleaned.startsWith('0')) cleaned = '62' + cleaned.substring(1);
+    return cleaned.length > 9 ? cleaned : null;
+}
+
+function createJsonResponse(data, statusCode = 200) {
+  return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
+}
+
+function getSheetData(sheet) {
+  const values = sheet.getDataRange().getValues();
+  if (values.length < 2) return [];
+  const headers = values.shift().map(h => h.toString().toLowerCase().replace(/ /g, '_'));
+  return values.map(row => {
+    const obj = {};
+    headers.forEach((header, index) => { obj[header] = row[index]; });
+    return obj;
+  });
+}
+
+function log(message) {
+  try {
+    getOrCreateSheet(LOG_SHEET_NAME).appendRow([new Date(), message]);
+  } catch (e) {
+    Logger.log(`Gagal menulis log: ${e.toString()}`);
+  }
+}
+
+/**
+ * =================================================================
+ * SETUP & INITIALIZATION FUNCTIONS
+ * =================================================================
+ */
+
+function onOpen() {
+  SpreadsheetApp.getUi().createMenu('Setup Aplikasi')
+      .addItem('Jalankan Setup Awal', 'runInitialSetup')
+      .addToUi();
+}
+
+function runInitialSetup() {
+    initialSetup();
+    SpreadsheetApp.getUi().alert('Setup Selesai!', 'Semua sheet dan kolom yang diperlukan telah berhasil disiapkan.', SpreadsheetApp.getUi().ButtonSet.OK);
+}
+
+function initialSetup() {
+  const ss = getOrCreateSpreadsheet();
+  SpreadsheetApp.setActiveSpreadsheet(ss);
+  
+  const headers = {
+    'Users': ['user_id', 'full_name', 'phone', 'password', 'department_id', 'registered_at'],
+    'Meetings': ['meeting_id', 'meeting_title', 'department_id', 'host_user_id', 'start_time', 'end_time', 'attendance_open_time', 'attendance_close_time', 'notes_file_link', 'created_at'],
+    'Attendances': ['attendance_id', 'meeting_id', 'participant_name', 'participant_nip', 'participant_phone', 'attendance_status', 'check_in_time'],
+    'LogAplikasi': ['Timestamp', 'Message']
+  };
+
+  for (const sheetName in headers) {
+    const sheet = getOrCreateSheet(sheetName);
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(headers[sheetName]);
+      sheet.getRange(1, 1, 1, headers[sheetName].length).setFontWeight('bold');
+      log(`Sheet '${sheetName}' created successfully with headers.`);
+    }
+  }
+  
+  getOrCreateFolder();
+  log('Setup verification complete.');
+}
+
+function getOrCreateSpreadsheet() {
+  if (SPREADSHEET_ID) {
+    try { return SpreadsheetApp.openById(SPREADSHEET_ID); } catch (e) { log(`Failed to open SPREADSHEET_ID: ${SPREADSHEET_ID}. Creating new.`); }
+  }
+  const files = DriveApp.getFilesByName(SPREADSHEET_NAME);
+  if (files.hasNext()) return SpreadsheetApp.open(files.next());
+  const ss = SpreadsheetApp.create(SPREADSHEET_NAME);
+  log(`Spreadsheet '${SPREADSHEET_NAME}' has been created.`);
+  return ss;
+}
+
+function getOrCreateSheet(sheetName) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet() || getOrCreateSpreadsheet();
+  let sheet = ss.getSheetByName(sheetName);
+  if (!sheet) {
+    sheet = ss.insertSheet(sheetName);
+    log(`Sheet '${sheetName}' has been created.`);
+  }
+  return sheet;
+}
+
+function getOrCreateFolder() {
+  const folders = DriveApp.getFoldersByName(GDRIVE_FOLDER_NAME);
+  if (folders.hasNext()) return folders.next();
+  const folder = DriveApp.createFolder(GDRIVE_FOLDER_NAME);
+  log(`Google Drive Folder '${GDRIVE_FOLDER_NAME}' has been created.`);
+  return folder;
+}
 
